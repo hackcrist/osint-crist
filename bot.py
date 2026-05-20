@@ -48,6 +48,16 @@ async def main():
     bot_info = await bot.get_me()
     logger.info(f"Bot conectado: @{bot_info.username} (ID: {bot_info.id})")
 
+    await bot.set_my_description(
+        "🕵️ Bot OSINT especializado en investigación de personas y doxxing.\n\n"
+        "Comandos: /email, /phone, /user, /person, /dox, /breach, /ip, /web, "
+        "/whois, /geo, /fbi, /pastes, /genemail, /track, /spam, /ai y más.\n\n"
+        "100% gratuito • Fuentes públicas • Sin registro obligatorio"
+    )
+    await bot.set_my_short_description(
+        "🕵️ OSINT • Doxxing • People Investigation • 100% Free"
+    )
+
     await bot.set_my_commands([
         BotCommand(command="start", description="Inicio y lista de comandos"),
         BotCommand(command="email", description="Investigar un correo electrónico"),
@@ -66,11 +76,19 @@ async def main():
         BotCommand(command="spam", description="Verificar reputación de número"),
         BotCommand(command="breach", description="Buscar filtraciones de seguridad"),
         BotCommand(command="fbi", description="Buscar en FBI Most Wanted"),
+        BotCommand(command="dox", description="Doxing completo (email/telefono/user/ip/nombre)"),
+        BotCommand(command="pastes", description="Buscar en Pastebin filtraciones y leaks"),
+        BotCommand(command="genemail", description="Generar emails desde un nombre real"),
         BotCommand(command="historial", description="Ver últimas búsquedas"),
         BotCommand(command="ai", description="Preguntar a la IA"),
+        BotCommand(command="aireset", description="Reiniciar memoria de la IA"),
         BotCommand(command="register", description="Registrarse en el bot"),
         BotCommand(command="perfil", description="Ver mi perfil"),
         BotCommand(command="help", description="Ayuda detallada del bot"),
+        BotCommand(command="usuarios", description="[Admin] Usuarios registrados"),
+        BotCommand(command="estadisticas", description="[Admin] Estadísticas del bot"),
+        BotCommand(command="aprobar", description="[Admin] Aprobar usuario"),
+        BotCommand(command="ban", description="[Admin] Banear usuario"),
     ], scope=BotCommandScopeDefault())
 
     try:

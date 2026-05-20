@@ -4,9 +4,10 @@ from urllib.parse import quote
 async def search_fbi(name: str) -> dict:
     url = "https://api.fbi.gov/wanted/v1/list"
     params = {"title": name, "pageSize": 5}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
         try:
-            async with session.get(url, params=params) as resp:
+            async with session.get(url, params=params, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     items = data.get("items", [])
@@ -41,9 +42,10 @@ async def search_fbi(name: str) -> dict:
 async def list_top_ten() -> list:
     url = "https://api.fbi.gov/wanted/v1/list"
     params = {"pageSize": 10}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
         try:
-            async with session.get(url, params=params) as resp:
+            async with session.get(url, params=params, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     items = data.get("items", [])

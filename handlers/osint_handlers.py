@@ -12,12 +12,15 @@ from modules.ip_lookup import lookup_ip, is_valid_ip, get_public_ip
 from modules.whois_module import whois_lookup
 from modules.exif_module import extract_exif_from_url, extract_exif_from_bytes
 from modules.utils_module import generate_hashes, generate_qr
-from modules.ai_assistant import ask_ai
+from modules.ai_assistant import ask_ai, extract_cmd, reset_memory
 from modules.fbi_wanted import search_fbi, list_top_ten
 from modules.spam_check import check_spam
 from modules.tracker import generate_link, fetch_logs, save_link_id, get_links, TRACKER_DOMAIN
+from modules.dox_module import full_dox, detect_input_type
+from modules.paste_search import search_pastes
+from modules.email_generator import gen_emails
 from database.db import save_search
-from utils.formatting import bold, code, link, paginate
+from utils.formatting import bold, code, link, paginate, esc
 from core.logger import logger
 
 router = Router()
@@ -819,14 +822,79 @@ async def cmd_ai(message: types.Message, command: CommandObject):
     msg = await message.answer(f"{bold('🤖 Pensando...')}")
 
     try:
-        response = await ask_ai(prompt)
-        pages = paginate(f"{bold('🤖 IA')}\n\n{response}")
-        await msg.delete()
-        for page in pages:
-            await message.answer(page, disable_web_page_preview=True)
+        response = await ask_ai(prompt, message.from_user.id)
+        cmd = extract_cmd(response)
+        if cmd:
+            await msg.delete()
+            await _execute_agent_command(message, cmd)
+        else:
+            safe = esc(response)
+            pages = paginate(f"{bold('🤖 IA')}\n\n{safe}")
+            await msg.delete()
+            for page in pages:
+                await message.answer(page, disable_web_page_preview=True)
     except Exception as e:
         logger.exception("Error en AI")
-        await msg.edit_text(f"Error: {str(e)[:200]}")
+        try:
+            await msg.edit_text(f"Error: {str(e)[:200]}")
+        except:
+            await message.answer(f"Error: {str(e)[:200]}")
+
+@router.message(Command("aireset"))
+async def cmd_ai_reset(message: types.Message):
+    reset_memory(message.from_user.id)
+    await message.answer("🧠 Memoria de IA reiniciada.")
+
+@router.message(lambda msg: msg.text and not msg.text.startswith("/"))
+async def agent_text(message: types.Message):
+    uid = message.from_user.id
+    logger.info(f"Agent text from {uid}: {message.text[:50]}")
+    msg = await message.answer(f"{bold('🤖 Procesando...')}")
+
+    try:
+        response = await ask_ai(message.text, uid)
+        cmd = extract_cmd(response)
+        if cmd:
+            logger.info(f"Agent executing CMD: {cmd}")
+            await msg.delete()
+            await _execute_agent_command(message, cmd)
+        else:
+            safe = esc(response)
+            pages = paginate(f"{bold('🤖 IA')}\n\n{safe}")
+            await msg.delete()
+            for page in pages:
+                await message.answer(page, disable_web_page_preview=True)
+    except Exception as e:
+        logger.exception("Error en agente")
+        try:
+            await msg.edit_text(f"Error: {str(e)[:200]}")
+        except:
+            await message.answer(f"Error: {str(e)[:200]}")
+
+@router.message(lambda msg: msg.photo or msg.document)
+async def agent_file(message: types.Message):
+    await message.answer(
+        "❌ Análisis de imágenes no disponible.\n\n"
+        "Describe el archivo con /ai y te ayudo."
+    )
+
+async def _execute_agent_command(message: types.Message, cmd_line: str):
+    parts = cmd_line.strip().split(maxsplit=1)
+    if not parts:
+        await message.answer("No se pudo interpretar el comando.")
+        return
+    cmd_name = parts[0].lower()
+    cmd_args = parts[1] if len(parts) > 1 else ""
+
+    from aiogram.filters import CommandObject
+    fake_command = CommandObject(command=cmd_name, args=cmd_args, prefix="/", mention=False)
+    try:
+        if cmd_name in CMD_MAP:
+            await CMD_MAP[cmd_name](message, fake_command)
+        else:
+            await message.answer(f"Comando desconocido: /{cmd_name}")
+    except Exception as e:
+        await message.answer(f"Error ejecutando /{cmd_name}: {str(e)[:200]}")
 
 @router.message(Command("spam"))
 async def cmd_spam(message: types.Message, command: CommandObject):
@@ -948,3 +1016,149 @@ async def cmd_fbi(message: types.Message, command: CommandObject):
     except Exception as e:
         logger.exception("Error en FBI lookup")
         await message.answer(f"Error: {str(e)[:200]}")
+
+@router.message(Command("dox"))
+async def cmd_dox(message: types.Message, command: CommandObject):
+    if not command.args:
+        t = (
+            f"🚀 {bold('DOX COMPLETO')}\n\n"
+            f"Ejecuta múltiples módulos OSINT simultáneamente "
+            f"según el tipo de dato ingresado.\n\n"
+            f"{bold('Detecta automáticamente:')}\n"
+            f"  📧 Email → email + breaches\n"
+            f"  📞 Teléfono → número + spam\n"
+            f"  👤 Username → redes + breaches\n"
+            f"  🌐 IP → geolocalización + VPN\n"
+            f"  👤 Nombre → persona + FBI\n\n"
+            f"{code('/dox usuario@ejemplo.com')}\n"
+            f"{code('/dox +34612345678')}\n"
+            f"{code('/dox midudev')}"
+        )
+        await message.answer(t)
+        return
+
+    args = command.args.strip()
+    input_type = detect_input_type(args)
+    await message.answer(
+        f"🚀 Ejecutando doxing completo...\n"
+        f"Objetivo: {code(args)}\n"
+        f"Tipo: {input_type.upper()}\n\n"
+        f"{code('Esto puede tomar unos segundos...')}"
+    )
+
+    try:
+        result = await full_dox(args)
+        await save_search(message.from_user.id, message.from_user.full_name, "dox", args, result[:500])
+        pages = paginate(result)
+        for page in pages:
+            await message.answer(page, disable_web_page_preview=True)
+    except Exception as e:
+        logger.exception("Error en dox")
+        await message.answer(f"Error: {str(e)[:200]}")
+
+@router.message(Command("pastes"))
+async def cmd_pastes(message: types.Message, command: CommandObject):
+    if not command.args:
+        await message.answer(
+            f"📋 {bold('BÚSQUEDA EN PASTES')}\n\n"
+            f"Comando:\n"
+            f"  {code('/pastes &lt;email o username&gt;')}\n\n"
+            f"Busca filtraciones y textos expuestos en\n"
+            f"Pastebin y otras plataformas de pastes:\n\n"
+            f"✅ psbdmp.ws (base de datos de pastes)\n"
+            f"✅ Scylla.so (base de datos de leaks)\n\n"
+            f"📌 Ejemplos:\n"
+            f"  {code('/pastes usuario@ejemplo.com')}\n"
+            f"  {code('/pastes midudev')}"
+        )
+        return
+
+    query = command.args.strip()
+    await message.answer(f"📋 Buscando pastes para {code(query)}...")
+
+    try:
+        data = await search_pastes(query)
+        lines = [f"📋 {bold('PASTES ENCONTRADOS')}\n"]
+        lines.append(f"Búsqueda: {code(data['query'])}")
+        lines.append(f"Total: {data['total']}\n")
+
+        if data["psbdmp"]:
+            lines.append(f"{bold('📄 PSBDMP (Pastebin Dumps)')}:")
+            for p in data["psbdmp"][:10]:
+                lines.append(f"  • {p['id']}")
+                if p["title"] and p["title"] != "Sin título":
+                    lines.append(f"    📌 {p['title']}")
+                lines.append(f"    🔗 {p['url']}")
+                if p["preview"]:
+                    lines.append(f"    📝 {p['preview'][:150]}")
+                lines.append("")
+
+        if data["scylla"]:
+            lines.append(f"{bold('🔗 Scylla.so')}:")
+            for s in data["scylla"][:5]:
+                lines.append(f"  🔗 {s['url']}")
+
+        if data["total"] == 0:
+            lines.append("No se encontraron pastes para esta consulta.")
+            lines.append("\n💡 Prueba con un email en lugar de username o viceversa.")
+
+        result = "\n".join(lines)
+        await save_search(message.from_user.id, message.from_user.full_name, "pastes", query, result[:500])
+        pages = paginate(result)
+        for page in pages:
+            await message.answer(page, disable_web_page_preview=True)
+    except Exception as e:
+        logger.exception("Error en pastes")
+        await message.answer(f"Error: {str(e)[:200]}")
+
+@router.message(Command("genemail"))
+async def cmd_genemail(message: types.Message, command: CommandObject):
+    if not command.args:
+        await message.answer(
+            f"📧 {bold('GENERADOR DE EMAILS')}\n\n"
+            f"Comando:\n"
+            f"  {code('/genemail &lt;nombre&gt; [@dominio]')}\n\n"
+            f"Genera posibles direcciones de email a partir\n"
+            f"de un nombre real usando patrones comunes.\n\n"
+            f"Si no especificas dominio, usa gmail.com.\n\n"
+            f"📌 Ejemplos:\n"
+            f"  {code('/genemail Juan Pérez López')}\n"
+            f"  {code('/genemail Juan Pérez @empresa.com')}"
+        )
+        return
+
+    args = command.args.strip()
+    await message.answer(f"📧 Generando emails para {code(args)}...")
+
+    try:
+        result = await gen_emails(args)
+        await save_search(message.from_user.id, message.from_user.full_name, "genemail", args, result[:500])
+        pages = paginate(result)
+        for page in pages:
+            await message.answer(page, disable_web_page_preview=True)
+    except Exception as e:
+        logger.exception("Error en genemail")
+        await message.answer(f"Error: {str(e)[:200]}")
+
+CMD_MAP = {
+    "email": cmd_email,
+    "domain": cmd_domain,
+    "phone": cmd_phone,
+    "user": cmd_user,
+    "breach": cmd_breach,
+    "geo": cmd_geo,
+    "person": cmd_person,
+    "web": cmd_web,
+    "ip": cmd_ip,
+    "whois": cmd_whois,
+    "exif": cmd_exif,
+    "hash": cmd_hash,
+    "qr": cmd_qr,
+    "track": cmd_track,
+    "ai": cmd_ai,
+    "spam": cmd_spam,
+    "fbi": cmd_fbi,
+    "dox": cmd_dox,
+    "pastes": cmd_pastes,
+    "genemail": cmd_genemail,
+}

@@ -1,5 +1,9 @@
 import json
+import html
 from datetime import datetime
+
+def esc(text: str) -> str:
+    return html.escape(str(text))
 
 def bold(text: str) -> str:
     return f"<b>{text}</b>"

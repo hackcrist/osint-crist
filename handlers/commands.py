@@ -27,6 +27,9 @@ async def _main_menu():
     builder.button(text="📵 Spam", callback_data="info_spam")
     builder.button(text="🎯 Domain", callback_data="info_domain")
     builder.button(text="🚔 FBI", callback_data="info_fbi")
+    builder.button(text="🚀 DOX", callback_data="info_dox")
+    builder.button(text="📋 Pastes", callback_data="info_pastes")
+    builder.button(text="📧 GenEmail", callback_data="info_genemail")
     builder.adjust(2)
     return builder.as_markup()
 
@@ -314,6 +317,60 @@ INFO_TEXTS = {
         f"  {code('/fbi Donald')}\n"
         f"  {code('/fbi top')}\n\n"
         f"🔗 Fuente: api.fbi.gov (pública y gratuita)"
+    ),
+    "dox": (
+        f"🚀 {bold('DOX COMPLETO')}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"Comando:\n"
+        f"  {code('/dox &lt;email|teléfono|username|ip|nombre&gt;')}\n\n"
+        f"Ejecuta MÚLTIPLES módulos OSINT a la vez\n"
+        f"según el tipo de dato que ingreses.\n\n"
+        f"Detecta automáticamente:\n"
+        f"  📧 Email → {bold('email + breaches')}\n"
+        f"  📞 Teléfono → {bold('número + spam')}\n"
+        f"  👤 Username → {bold('redes + breaches')}\n"
+        f"  🌐 IP → {bold('geolocalización + VPN')}\n"
+        f"  👤 Nombre → {bold('persona + FBI')}\n\n"
+        f"📌 Ejemplos:\n"
+        f"  {code('/dox usuario@ejemplo.com')}\n"
+        f"  {code('/dox +34612345678')}\n"
+        f"  {code('/dox midudev')}\n"
+        f"  {code('/dox 8.8.8.8')}\n"
+        f"  {code('/dox Lionel Messi')}"
+    ),
+    "genemail": (
+        f"📧 {bold('GENERADOR DE EMAILS')}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"Comando:\n"
+        f"  {code('/genemail &lt;nombre&gt; [@dominio]')}\n\n"
+        f"Genera posibles emails a partir de un nombre\n"
+        f"real usando patrones comunes de doxxing.\n\n"
+        f"✅ {bold('20+ patrones')} de combinaciones\n"
+        f"✅ Soporta acentos y nombres compuestos\n"
+        f"✅ Dominio personalizable\n"
+        f"✅ Sugiere dominios alternativos\n\n"
+        f"Útil para encontrar el email real de una\n"
+        f"persona cuando conoces su nombre.\n\n"
+        f"📌 Ejemplos:\n"
+        f"  {code('/genemail Juan Pérez López')}\n"
+        f"  {code('/genemail Juan Pérez @empresa.com')}"
+    ),
+    "pastes": (
+        f"📋 {bold('BÚSQUEDA EN PASTES')}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"Comando:\n"
+        f"  {code('/pastes &lt;email o username&gt;')}\n\n"
+        f"Busca filtraciones y textos expuestos en\n"
+        f"Pastebin y otras plataformas de pastes:\n\n"
+        f"✅ psbdmp.ws — Base de datos de pastebins\n"
+        f"✅ Scylla.so — Base de datos de leaks\n\n"
+        f"Ideal para encontrar:\n"
+        f"• Contraseñas filtradas\n"
+        f"• Bases de datos expuestas\n"
+        f"• Información privada publicada\n\n"
+        f"📌 Ejemplos:\n"
+        f"  {code('/pastes usuario@ejemplo.com')}\n"
+        f"  {code('/pastes midudev')}"
     ),
     "tracker": (
         f"📡 {bold('TRACKER DE VISITAS')}\n"

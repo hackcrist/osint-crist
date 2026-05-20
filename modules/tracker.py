@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 
-TRACKER_DOMAIN = "juliovip.com"
+TRACKER_DOMAIN = "porkyvipff.com"
 TRACKER_FILE = "track.php"
 TRACKER_SECRET = "osint2026"
 LOGS_DIR = Path(__file__).parent.parent / "tracker" / "logs"
