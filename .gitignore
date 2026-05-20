@@ -1,0 +1,8 @@
+.env
+logs/
+database/*.db
+tracker/logs/
+tracker/links.json
+__pycache__/
+*.pyc
+*.pyo
