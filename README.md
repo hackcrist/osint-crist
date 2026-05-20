@@ -28,14 +28,16 @@ Bot de Telegram para OSINT (Open Source Intelligence) enfocado en investigación
 
 ## 📦 Instalación
 
-### 1. Clonar el repositorio
+### PC / VPS (Linux, Windows, Mac)
+
+#### 1. Clonar el repositorio
 
 ```bash
 git clone https://github.com/hackcrist/osint-crist.git
 cd osint-crist
 ```
 
-### 2. Crear entorno virtual (opcional pero recomendado)
+#### 2. Crear entorno virtual (opcional pero recomendado)
 
 ```bash
 python -m venv venv
@@ -43,13 +45,13 @@ source venv/bin/activate   # Linux/Mac
 venv\Scripts\activate      # Windows
 ```
 
-### 3. Instalar dependencias
+#### 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configurar variables de entorno
+#### 4. Configurar variables de entorno
 
 Copia el archivo de ejemplo y edítalo con tus claves:
 
@@ -68,11 +70,67 @@ Edita `.env` y completa al menos:
 | `VTOTAL_KEY` | ❌ Opcional | VirusTotal (web) |
 | `IPLOCATE_KEY` | ❌ Opcional | IPLocate (IP) |
 
-### 5. Iniciar el bot
+#### 5. Iniciar el bot
 
 ```bash
 python bot.py
 ```
+
+---
+
+### 📱 Termux (Android)
+
+#### 1. Instalar Termux desde F-Droid
+
+Descarga Termux de [F-Droid](https://f-droid.org/packages/com.termux/) (NO de Google Play, está desactualizado).
+
+#### 2. Actualizar paquetes e instalar Python
+
+```bash
+pkg update && pkg upgrade -y
+pkg install python git -y
+```
+
+#### 3. Clonar el repositorio
+
+```bash
+git clone https://github.com/hackcrist/osint-crist.git
+cd osint-crist
+```
+
+#### 4. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+Si da error con `dnspython` o ` Pillow`, instala las dependencias del sistema:
+
+```bash
+pkg install libffi libsodium openblas -y
+```
+
+#### 5. Configurar .env
+
+```bash
+cp .env.example .env
+nano .env   # O usa vi si prefieres
+```
+
+Completa al menos `BOT_TOKEN` y `OWNER_ID`.
+
+#### 6. Iniciar el bot
+
+```bash
+python bot.py
+```
+
+> **Nota:** Para mantener el bot corriendo en segundo plano en Termux, usa:
+> ```bash
+> termux-wake-lock
+> python bot.py &
+> ```
+> O instala `tmux`: `pkg install tmux -y` y ejecuta dentro de una sesión tmux.
 
 ## 📡 Tracker (captura de IPs)
 
