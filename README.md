@@ -340,3 +340,7 @@ Las APIs sin key funcionan **sin configuración**. Las que requieren key son opc
 Apache 2.0 — Uso educativo e investigación. Cada quien es responsable del uso que le dé a esta herramienta.
 
 Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+*Creado por [Crist-Code](https://github.com/hackcrist) — OSINT Crist Bot*
