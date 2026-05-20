@@ -177,10 +177,17 @@ cd osint-crist
 pip install -r requirements.txt
 ```
 
-Si hay errores con `dnspython` o `Pillow`, instala dependencias adicionales:
+Si hay errores con `dnspython`, `Pillow` o `cryptography`, instala las dependencias del sistema necesarias:
 
 ```bash
-pkg install libffi libsodium openblas -y
+pkg install libffi openblas binutils rust -y
+pip install --upgrade pip wheel setuptools
+```
+
+Luego vuelve a intentar:
+
+```bash
+pip install -r requirements.txt
 ```
 
 #### 4. Configurar .env
@@ -330,4 +337,6 @@ Las APIs sin key funcionan **sin configuración**. Las que requieren key son opc
 
 ## 📄 Licencia
 
-MIT — Uso educativo e investigación. Cada quien es responsable del uso que le dé a esta herramienta.
+Apache 2.0 — Uso educativo e investigación. Cada quien es responsable del uso que le dé a esta herramienta.
+
+Ver el archivo [LICENSE](LICENSE) para más detalles.
