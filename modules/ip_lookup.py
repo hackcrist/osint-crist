@@ -16,7 +16,7 @@ async def get_public_ip() -> str:
 async def lookup_ip(ip: str) -> dict:
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as session:
         try:
-            async with session.get(f"http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query") as resp:
+            async with session.get(f"http://ip-api.com/json/{ip}?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query&lang=es") as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     if data.get("status") == "success":
@@ -28,23 +28,31 @@ async def lookup_ip(ip: str) -> dict:
                         result = {
                             "success": True,
                             "ip": data["query"],
+                            "continente": data.get("continent", ""),
+                            "codigo_continente": data.get("continentCode", ""),
                             "pais": data.get("country", ""),
                             "codigo_pais": data.get("countryCode", ""),
                             "region": data.get("regionName", ""),
                             "ciudad": data.get("city", ""),
+                            "distrito": data.get("district", ""),
                             "codigo_postal": data.get("zip", ""),
                             "lat": data.get("lat"),
                             "lon": data.get("lon"),
                             "zona_horaria": data.get("timezone", ""),
+                            "offset": data.get("offset", ""),
+                            "moneda": data.get("currency", ""),
                             "isp": data.get("isp", ""),
                             "org": data.get("org", ""),
                             "asn": data.get("as", ""),
+                            "asname": data.get("asname", ""),
                             "hostname": hostname,
+                            "reverso": data.get("reverse", ""),
+                            "mobile": data.get("mobile", False),
+                            "proxy": data.get("proxy", False),
+                            "hosting": data.get("hosting", False),
                             "map_url": f"https://www.google.com/maps?q={data['lat']},{data['lon']}",
                             "vpn": False,
-                            "proxy": False,
                             "tor": False,
-                            "hosting": False,
                             "abuse_email": "",
                             "abuse_phone": "",
                             "company_name": "",

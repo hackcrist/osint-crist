@@ -555,18 +555,27 @@ async def cmd_ip(message: types.Message, command: CommandObject):
         lines = [
             f"{bold('🌐 Información de IP')}\n",
             f"{bold('IP')}: {code(data['ip'])}",
+            f"{bold('Continente')}: {data['continente']} ({data['codigo_continente']})",
             f"{bold('País')}: {flag} {data['pais']} ({data['codigo_pais']})",
             f"{bold('Región')}: {data['region']}",
             f"{bold('Ciudad')}: {data['ciudad']}",
+            f"{bold('Distrito')}: {data['distrito']}" if data.get('distrito') else "",
             f"{bold('CP')}: {data['codigo_postal']}",
             f"{bold('Coordenadas')}: {data['lat']}, {data['lon']}",
-            f"{bold('Zona horaria')}: {data['zona_horaria']}",
+            f"{bold('Zona horaria')}: {data['zona_horaria']} (UTC{data['offset']:+})" if data.get('offset') else f"{bold('Zona horaria')}: {data['zona_horaria']}",
+            f"{bold('Moneda')}: {data['moneda']}" if data.get('moneda') else "",
             f"{bold('ISP')}: {data['isp']}",
             f"{bold('Organización')}: {data['org']}",
             f"{bold('ASN')}: {data['asn']}",
         ]
+        if data.get("asname"):
+            lines.append(f"{bold('AS Nombre')}: {data['asname']}")
         if data.get("hostname"):
             lines.append(f"{bold('Hostname')}: {data['hostname']}")
+        if data.get("reverso"):
+            lines.append(f"{bold('DNS reverso')}: {data['reverso']}")
+        if data.get("mobile"):
+            lines.append(f"{bold('📱 Conexión móvil')}: Sí")
 
         lines.append("")
         lines.append(f"{bold('🗺️ Mapa')}: {data['map_url']}")
